@@ -9,13 +9,13 @@ import Modal from "..";
 import { formatISO } from "date-fns";
 
 type Props = {
-  id: string;
+  id?: string | null;
   isOpen: boolean;
   onClose: () => void;
   selectedStatus?: typeof Status;
 };
 
-const ModalNewTask = ({ id, isOpen, onClose, selectedStatus }: Props) => {
+const ModalNewTask = ({ id = null, isOpen, onClose }: Props) => {
   const [createTask, { isLoading }] = useCreateTaskMutation();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -26,6 +26,7 @@ const ModalNewTask = ({ id, isOpen, onClose, selectedStatus }: Props) => {
   const [dueDate, setDueDate] = useState("");
   const [authorUserId, setAuthorUserId] = useState("");
   const [assignedUserId, setAssignedUserId] = useState("");
+  const [projectId, setProjectId] = useState("");
 
   const handleSubmit = async () => {
     if (!title && !authorUserId) return;
@@ -45,14 +46,14 @@ const ModalNewTask = ({ id, isOpen, onClose, selectedStatus }: Props) => {
       tags,
       startDate: formatedStartDate,
       dueDate: formatedDueDate,
-      projectId: Number(id),
+      projectId: id !== null ? Number(id) : Number(projectId),
       authorUserId: parseInt(authorUserId),
       assignedUserId: parseInt(assignedUserId),
     });
   };
 
   const isFormValid = () => {
-    return !!title.trim() && !!authorUserId;
+    return !!title.trim() && !!authorUserId && !(id !== null || projectId);
   };
 
   const selectStyles =
@@ -151,7 +152,15 @@ const ModalNewTask = ({ id, isOpen, onClose, selectedStatus }: Props) => {
           value={assignedUserId}
           onChange={(e) => setAssignedUserId(e.target.value)}
         />
-
+        {id === null && (
+          <input
+            className={inputStyles}
+            type="text"
+            placeholder="Project Id"
+            value={projectId}
+            onChange={(e) => setProjectId(e.target.value)}
+          />
+        )}
         <button
           type="submit"
           className={`bg-blue-primary focus:outline-non focus-offset-2 mt-4 flex w-full justify-center rounded-md border border-transparent px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-600 focus:ring-2 focus:ring-blue-600 focus:outline-none ${!isFormValid() || isLoading ? "cursor-not-allowed opacity-50" : ""}`}
