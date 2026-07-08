@@ -20,11 +20,11 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
   }, [isDarkMode]);
 
   return (
-    <div className="flex min-h-screen w-full bg-gray-50 text-gray-900">
+    <div className="flex min-h-screen w-full bg-gray-50 text-gray-900 dark:bg-dark-bg dark:text-gray-100">
       {/* Sidebar */}
       <Sidebar />
       <main
-        className={`dark:bg-dark-bg flex w-full flex-col bg-gray-50 ${isSidebarCollapsed ? "" : "md:pl-64"}`}
+        className={`flex w-full flex-col main-bg-gradient ${isSidebarCollapsed ? "" : "md:pl-64"}`}
       >
         <Navbar />
         {children}

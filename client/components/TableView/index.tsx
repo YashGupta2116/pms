@@ -1,89 +1,168 @@
-import { useAppSelector } from "@/app/redux";
+import { CustomTable, ColumnDef } from "@/components/CustomTable";
 import Header from "@/components/Header";
-import { dataGridClassNames, dataGridSxStyles } from "@/lib/utils";
-import { useGetTasksQuery } from "@/state/api";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
+import { useGetTasksQuery, Task } from "@/state/api";
 import React from "react";
+import { format } from "date-fns";
+import { Tag, Shield, Bookmark, Calendar, User } from "lucide-react";
 
 type Props = {
   id: string;
   setIsModalNewTaskOpen: (isOpen: boolean) => void;
 };
 
-const columns: GridColDef[] = [
+const columns: ColumnDef<Task>[] = [
   {
-    field: "title",
     headerName: "Title",
-    width: 100,
+    field: "title",
+    className: "font-semibold text-gray-900 dark:text-white text-sm",
   },
   {
-    field: "description",
     headerName: "Description",
-    width: 200,
+    field: "description",
+    className: "text-gray-500 max-w-[200px] truncate",
   },
   {
-    field: "status",
     headerName: "Status",
-    width: 130,
-    renderCell: (params) => (
-      <span className="inline-flex rounded-full bg-green-100 px-2 text-xs leading-5 font-semibold text-green-800">
-        {params.value}
-      </span>
-    ),
+    field: "status",
+    renderCell: ({ value }) => {
+      const statusStr = String(value);
+      let colorClass = "bg-slate-100 text-slate-800 dark:bg-slate-900/40 dark:text-slate-300";
+      if (statusStr === "WorkInProgress") {
+        colorClass = "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300";
+      } else if (statusStr === "UnderReview") {
+        colorClass = "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300";
+      } else if (statusStr === "Completed") {
+        colorClass = "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300";
+      }
+      return (
+        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${colorClass}`}>
+          {statusStr}
+        </span>
+      );
+    },
   },
   {
-    field: "priority",
     headerName: "Priority",
-    width: 75,
+    field: "priority",
+    renderCell: ({ value }) => {
+      const priorityStr = String(value);
+      let colorClass = "bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-300";
+      if (priorityStr === "Urgent") {
+        colorClass = "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300";
+      } else if (priorityStr === "High") {
+        colorClass = "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300";
+      } else if (priorityStr === "Medium") {
+        colorClass = "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300";
+      } else if (priorityStr === "Low") {
+        colorClass = "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300";
+      }
+      return (
+        <span className={`inline-flex items-center rounded px-2 py-0.5 text-[10px] font-bold uppercase ${colorClass}`}>
+          {priorityStr}
+        </span>
+      );
+    },
   },
   {
-    field: "tags",
     headerName: "Tags",
-    width: 130,
+    field: "tags",
+    renderCell: ({ value }) => {
+      if (!value) return "-";
+      return (
+        <div className="flex flex-wrap gap-1 max-w-[150px]">
+          {String(value)
+            .split(",")
+            .map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex items-center gap-0.5 rounded-full bg-blue-50/50 px-2 py-0.5 text-[10px] font-semibold text-blue-600 dark:bg-blue-950/20 dark:text-blue-300 border border-blue-100/30"
+              >
+                <Tag className="h-2 w-2 shrink-0" />
+                {tag.trim()}
+              </span>
+            ))}
+        </div>
+      );
+    },
   },
   {
-    field: "startDate",
     headerName: "Start Date",
-    width: 130,
+    field: "startDate",
+    renderCell: ({ value }) => {
+      if (!value) return "-";
+      try {
+        return (
+          <span className="inline-flex items-center gap-1 text-gray-500 dark:text-neutral-400">
+            <Calendar className="h-3 w-3 shrink-0" />
+            {format(new Date(String(value)), "MMM dd, yyyy")}
+          </span>
+        );
+      } catch {
+        return String(value);
+      }
+    },
   },
   {
-    field: "dueDate",
     headerName: "Due Date",
-    width: 130,
+    field: "dueDate",
+    renderCell: ({ value }) => {
+      if (!value) return "-";
+      try {
+        return (
+          <span className="inline-flex items-center gap-1 text-gray-500 dark:text-neutral-400">
+            <Calendar className="h-3 w-3 shrink-0 text-red-400/80" />
+            {format(new Date(String(value)), "MMM dd, yyyy")}
+          </span>
+        );
+      } catch {
+        return String(value);
+      }
+    },
   },
   {
-    field: "author",
     headerName: "Author",
-    width: 150,
-    renderCell: (params) => params.value?.author || "Unknown",
+    field: "author",
+    renderCell: ({ row }) => {
+      return (
+        <span className="inline-flex items-center gap-1">
+          <User className="h-3.5 w-3.5 text-gray-400" />
+          {row.author?.username || "Unknown"}
+        </span>
+      );
+    },
   },
   {
-    field: "assignee",
     headerName: "Assignee",
-    width: 150,
-    renderCell: (params) => params.value?.assignee || "Unassigned",
+    field: "assignee",
+    renderCell: ({ row }) => {
+      return (
+        <span className="inline-flex items-center gap-1 font-semibold text-gray-800 dark:text-gray-200">
+          <User className="h-3.5 w-3.5 text-blue-500" />
+          {row.assignee?.username || "Unassigned"}
+        </span>
+      );
+    },
   },
 ];
 
 const TableView = ({ id, setIsModalNewTaskOpen }: Props) => {
-  const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
   const {
     data: tasks,
     error,
     isLoading,
   } = useGetTasksQuery({ projectId: Number(id) });
 
-  if (isLoading) return <div>Loading...</div>;
-  if (error || !tasks) return <div>An error occurred while fetching tasks</div>;
+  if (isLoading) return <div className="p-8 text-center text-sm text-gray-400">Loading tasks...</div>;
+  if (error || !tasks) return <div className="p-8 text-center text-sm text-red-400">An error occurred while fetching tasks</div>;
 
   return (
-    <div className="h-[540px] w-full px-4 pb-8 xl:px-6">
-      <div className="pt-5">
+    <div className="w-full px-4 pb-8 xl:px-6">
+      <div className="pt-4 pb-4">
         <Header
-          name="Table"
+          name="Table View"
           buttonComponent={
             <button
-              className="bg-blue-primary flex items-center rounded px-3 py-2 text-white hover:bg-blue-600"
+              className="bg-blue-primary flex items-center rounded-lg px-4 py-2 text-white hover:bg-blue-600 transition-colors text-sm font-semibold shadow-sm"
               onClick={() => setIsModalNewTaskOpen(true)}
             >
               Add Task
@@ -92,12 +171,14 @@ const TableView = ({ id, setIsModalNewTaskOpen }: Props) => {
           isSmallText
         />
       </div>
-      <DataGrid
-        rows={tasks || []}
-        columns={columns}
-        className={dataGridClassNames}
-        sx={dataGridSxStyles(isDarkMode)}
-      />
+      <div className="shadow-sm border border-gray-205/60 dark:border-stroke-dark rounded-xl overflow-hidden bg-white dark:bg-dark-secondary">
+        <CustomTable
+          data={tasks || []}
+          columns={columns}
+          searchPlaceholder="Search task titles..."
+          searchField="title"
+        />
+      </div>
     </div>
   );
 };

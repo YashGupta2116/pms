@@ -84,3 +84,12 @@ body,
   width: 0px;
   height: 0px;
 }
+
+/* Custom Global Dark Theme Backgrounds */
+.main-bg-gradient {
+  background-color: #f9fafb; /* bg-gray-50 */
+}
+.dark .main-bg-gradient {
+  background: radial-gradient(ellipse at top, rgba(30, 41, 59, 0.25) 0%, #101214 70%) no-repeat;
+  background-color: #101214;
+}

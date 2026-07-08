@@ -35,7 +35,7 @@ const BoardView = ({ id, setIsModalNewTaskOpen }: BoardProps) => {
 
   return (
     <DndProvider backend={HTML5Backend}>
-      <div className="gird-cols-1 xl:grid-cols;4 grid gap-4 p-4 md:grid-cols-2">
+      <div className="grid-cols-1 xl:grid-cols-4 grid gap-4 p-4 md:grid-cols-2">
         {taskStatus.map((status) => (
           <TaskColumn
             key={status}
@@ -153,17 +153,16 @@ const Task = ({ task }: TaskProps) => {
   const PriorityTag = ({ priority }: { priority: TaskType["priority"] }) => {
     return (
       <div
-        className={`rounded-full px-2 py-1 text-xs font-semibold ${
-          priority === "Urgent"
-            ? "bg-red-200 text-red-700"
-            : priority === "High"
-              ? "bg-yellow-200 text-yellow-700"
-              : priority === "Medium"
-                ? "bg-green-200 text-green-700"
-                : priority === "Low"
-                  ? "bg-blue-200 text-blue-700"
-                  : "bg-gray-200 text-gray-700"
-        }`}
+        className={`rounded-full px-2 py-1 text-xs font-semibold ${priority === "Urgent"
+          ? "bg-red-200 text-red-700"
+          : priority === "High"
+            ? "bg-yellow-200 text-yellow-700"
+            : priority === "Medium"
+              ? "bg-green-200 text-green-700"
+              : priority === "Low"
+                ? "bg-blue-200 text-blue-700"
+                : "bg-gray-200 text-gray-700"
+          }`}
       >
         {priority}
       </div>
@@ -195,9 +194,8 @@ const Task = ({ task }: TaskProps) => {
               {taskTagsSplit.map((tag) => (
                 <div
                   key={tag}
-                  className="rounded-full bg-blue-100 px-2 py-1 text-xs"
+                  className="rounded-full bg-blue-50 px-2 py-1 text-xs font-semibold text-blue-600 dark:bg-blue-950/40 dark:text-blue-300"
                 >
-                  {" "}
                   {tag}
                 </div>
               ))}

@@ -1,69 +1,150 @@
 "use client";
-import { useAppSelector } from "@/app/redux";
-import { Priority, useGetUserTasksQuery } from "@/state/api";
+
+import { Priority, useGetUserTasksQuery, Task } from "@/state/api";
 import { useState } from "react";
 import ModalNewTask from "../Modal/ModalNewTask";
 import Header from "../Header";
 import TaskCard from "../TaskCard";
-import { DataGrid, GridColDef } from "@mui/x-data-grid";
-import { dataGridClassNames, dataGridSxStyles } from "@/lib/utils";
+import { CustomTable, ColumnDef } from "@/components/CustomTable";
+import { format } from "date-fns";
+import { Tag, Calendar, User } from "lucide-react";
 
 type Props = {
   priority: Priority;
 };
 
-const columns: GridColDef[] = [
+const columns: ColumnDef<Task>[] = [
   {
-    field: "title",
     headerName: "Title",
-    width: 100,
+    field: "title",
+    className: "font-semibold text-gray-900 dark:text-white text-sm",
   },
   {
-    field: "description",
     headerName: "Description",
-    width: 200,
+    field: "description",
+    className: "text-gray-500 max-w-[200px] truncate",
   },
   {
-    field: "status",
     headerName: "Status",
-    width: 130,
-    renderCell: (params) => (
-      <span className="inline-flex rounded-full bg-green-100 px-2 text-xs leading-5 font-semibold text-green-800">
-        {params.value}
-      </span>
-    ),
+    field: "status",
+    renderCell: ({ value }) => {
+      const statusStr = String(value);
+      let colorClass = "bg-slate-100 text-slate-800 dark:bg-slate-900/40 dark:text-slate-300";
+      if (statusStr === "WorkInProgress") {
+        colorClass = "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300";
+      } else if (statusStr === "UnderReview") {
+        colorClass = "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300";
+      } else if (statusStr === "Completed") {
+        colorClass = "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300";
+      }
+      return (
+        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${colorClass}`}>
+          {statusStr}
+        </span>
+      );
+    },
   },
   {
-    field: "priority",
     headerName: "Priority",
-    width: 75,
+    field: "priority",
+    renderCell: ({ value }) => {
+      const priorityStr = String(value);
+      let colorClass = "bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-300";
+      if (priorityStr === "Urgent") {
+        colorClass = "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300";
+      } else if (priorityStr === "High") {
+        colorClass = "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300";
+      } else if (priorityStr === "Medium") {
+        colorClass = "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300";
+      } else if (priorityStr === "Low") {
+        colorClass = "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300";
+      }
+      return (
+        <span className={`inline-flex items-center rounded px-2 py-0.5 text-[10px] font-bold uppercase ${colorClass}`}>
+          {priorityStr}
+        </span>
+      );
+    },
   },
   {
-    field: "tags",
     headerName: "Tags",
-    width: 130,
+    field: "tags",
+    renderCell: ({ value }) => {
+      if (!value) return "-";
+      return (
+        <div className="flex flex-wrap gap-1 max-w-[150px]">
+          {String(value)
+            .split(",")
+            .map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex items-center gap-0.5 rounded-full bg-blue-50/50 px-2 py-0.5 text-[10px] font-semibold text-blue-600 dark:bg-blue-950/20 dark:text-blue-300 border border-blue-100/30"
+              >
+                <Tag className="h-2 w-2 shrink-0" />
+                {tag.trim()}
+              </span>
+            ))}
+        </div>
+      );
+    },
   },
   {
-    field: "startDate",
     headerName: "Start Date",
-    width: 130,
+    field: "startDate",
+    renderCell: ({ value }) => {
+      if (!value) return "-";
+      try {
+        return (
+          <span className="inline-flex items-center gap-1 text-gray-500 dark:text-neutral-400">
+            <Calendar className="h-3 w-3 shrink-0" />
+            {format(new Date(String(value)), "MMM dd, yyyy")}
+          </span>
+        );
+      } catch {
+        return String(value);
+      }
+    },
   },
   {
-    field: "dueDate",
     headerName: "Due Date",
-    width: 130,
+    field: "dueDate",
+    renderCell: ({ value }) => {
+      if (!value) return "-";
+      try {
+        return (
+          <span className="inline-flex items-center gap-1 text-gray-500 dark:text-neutral-400">
+            <Calendar className="h-3 w-3 shrink-0 text-red-400/80" />
+            {format(new Date(String(value)), "MMM dd, yyyy")}
+          </span>
+        );
+      } catch {
+        return String(value);
+      }
+    },
   },
   {
-    field: "author",
     headerName: "Author",
-    width: 150,
-    renderCell: (params) => params.value?.author || "Unknown",
+    field: "author",
+    renderCell: ({ row }) => {
+      return (
+        <span className="inline-flex items-center gap-1">
+          <User className="h-3.5 w-3.5 text-gray-400" />
+          {row.author?.username || "Unknown"}
+        </span>
+      );
+    },
   },
   {
-    field: "assignee",
     headerName: "Assignee",
-    width: 150,
-    renderCell: (params) => params.value?.assignee || "Unassigned",
+    field: "assignee",
+    renderCell: ({ row }) => {
+      return (
+        <span className="inline-flex items-center gap-1 font-semibold text-gray-800 dark:text-gray-200">
+          <User className="h-3.5 w-3.5 text-blue-500" />
+          {row.assignee?.username || "Unassigned"}
+        </span>
+      );
+    },
   },
 ];
 
@@ -80,13 +161,11 @@ const DynamicPriorityPage = ({ priority }: Props) => {
     skip: userId === null,
   });
 
-  const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
-
   const filteredTask = userTasksData?.filter(
     (task) => task.priority === priority,
   );
 
-  if (isTasksError || !userTasksData) return <div>Error fetching tasks</div>;
+  if (isTasksError || !userTasksData) return <div className="p-8 text-center text-sm text-red-400">Error fetching tasks</div>;
 
   return (
     <div className="m-5 p-4">
@@ -98,7 +177,7 @@ const DynamicPriorityPage = ({ priority }: Props) => {
         name="Priority Page"
         buttonComponent={
           <button
-            className="mr-3 rounded bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-700"
+            className="mr-3 rounded-lg bg-blue-primary px-4 py-2 text-sm font-semibold text-white hover:bg-blue-600 transition-colors shadow-sm"
             onClick={() => setIsModalNewTaskOpen(true)}
           >
             Add Task
@@ -106,22 +185,28 @@ const DynamicPriorityPage = ({ priority }: Props) => {
         }
       />
 
-      <div className="mb-4 flex justify-start">
+      <div className="mb-4 mt-4 flex justify-start gap-1 p-1 bg-gray-100 dark:bg-dark-secondary rounded-lg w-fit border border-gray-200/50 dark:border-stroke-dark/50 select-none">
         <button
-          className={`px-4 py-2 ${view === "list" ? "bg-gray-300" : "bg-white"} rounded-l`}
+          className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${view === "list"
+            ? "bg-white text-gray-900 shadow-sm dark:bg-dark-tertiary dark:text-white"
+            : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+            }`}
           onClick={() => setView("list")}
         >
           List
         </button>
         <button
-          className={`px-4 py-2 ${view === "table" ? "bg-gray-300" : "bg-white"} rounded-l`}
+          className={`px-4 py-1.5 text-sm font-medium rounded-md transition-all duration-200 ${view === "table"
+            ? "bg-white text-gray-900 shadow-sm dark:bg-dark-tertiary dark:text-white"
+            : "text-gray-500 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white"
+            }`}
           onClick={() => setView("table")}
         >
           Table
         </button>
       </div>
       {isLoading ? (
-        <div>Loading tasks....</div>
+        <div className="p-8 text-center text-sm text-gray-400">Loading tasks....</div>
       ) : view === "list" ? (
         <div className="grid grid-cols-1 gap-4">
           {filteredTask?.map((task) => (
@@ -131,14 +216,12 @@ const DynamicPriorityPage = ({ priority }: Props) => {
       ) : (
         view === "table" &&
         filteredTask && (
-          <div className="w-full">
-            <DataGrid
-              rows={filteredTask}
+          <div className="shadow-sm border border-gray-205/60 dark:border-stroke-dark rounded-xl overflow-hidden bg-white dark:bg-dark-secondary">
+            <CustomTable
+              data={filteredTask}
               columns={columns}
-              checkboxSelection
-              getRowId={(row) => row.id}
-              className={dataGridClassNames}
-              sx={dataGridSxStyles(isDarkMode)}
+              searchPlaceholder="Search task titles..."
+              searchField="title"
             />
           </div>
         )

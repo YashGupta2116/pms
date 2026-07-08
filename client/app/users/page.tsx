@@ -1,70 +1,63 @@
 "use client";
-import { useGetUsersQuery } from "@/state/api";
-import { useAppSelector } from "../redux";
+
+import { useGetUsersQuery, User } from "@/state/api";
 import Header from "@/components/Header";
-import {
-  DataGrid,
-  ExportCsv,
-  FilterPanelTrigger,
-  GridColDef,
-  Toolbar,
-  ToolbarButton,
-} from "@mui/x-data-grid";
+import { CustomTable, ColumnDef } from "@/components/CustomTable";
 import Image from "next/image";
-import { dataGridClassNames, dataGridSxStyles } from "@/lib/utils";
 
-const CustomToolbar = () => (
-  <Toolbar className="toolbar flex gap-2">
-    <FilterPanelTrigger render={<ToolbarButton />}>Filters</FilterPanelTrigger>
-    <ExportCsv render={<ToolbarButton />}>Export</ExportCsv>
-  </Toolbar>
-);
-
-const columns: GridColDef[] = [
-  { field: "userId", headerName: "ID", width: 100 },
-  { field: "username", headerName: "Username", width: 150 },
+const columns: ColumnDef<User>[] = [
   {
-    field: "profilePictureUrl",
+    headerName: "ID",
+    field: "userId",
+    className: "font-semibold text-gray-500",
+  },
+  {
+    headerName: "Username",
+    field: "username",
+    className: "font-bold text-gray-900 dark:text-white text-sm",
+  },
+  {
     headerName: "Profile Picture",
-    width: 100,
-    renderCell: (params) => (
-      <div className="flex h-full w-full items-center justify-center">
-        <div className="h-9 w-9">
-          <Image
-            src={`/${params.value}`}
-            alt={params.row.username}
-            width={100}
-            height={50}
-            className="h-full rounded-full object-cover"
-          />
+    field: "profilePictureUrl",
+    renderCell: ({ value, row }) => {
+      if (value) {
+        return (
+          <div className="h-9 w-9 overflow-hidden rounded-full border-2 border-white dark:border-stroke-dark shadow-sm">
+            <Image
+              src={`/${value}`}
+              alt={row.username}
+              width={36}
+              height={36}
+              className="h-full w-full object-cover"
+            />
+          </div>
+        );
+      }
+      const initials = (row.username || "").substring(0, 2).toUpperCase();
+      return (
+        <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-50 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300 font-extrabold text-sm border-2 border-white dark:border-stroke-dark shadow-sm">
+          {initials}
         </div>
-      </div>
-    ),
+      );
+    },
   },
 ];
 
 const Users = () => {
   const { data: users, isLoading, isError } = useGetUsersQuery();
-  const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
 
-  if (isLoading) return <div>Loading...</div>;
-  if (isError || !users) return <div>Error fetching users</div>;
+  if (isLoading) return <div className="p-8 text-center text-sm text-gray-400">Loading users...</div>;
+  if (isError || !users) return <div className="p-8 text-center text-sm text-red-400">Error fetching users</div>;
 
   return (
-    <div className="flex w-full flex-col p-8">
+    <div className="flex w-full flex-col p-8 bg-gray-50/30 dark:bg-dark-bg min-h-screen">
       <Header name="Users" />
-      <div style={{ height: 650, width: "100%" }}>
-        <DataGrid
-          rows={users || []}
+      <div className="shadow-sm border border-gray-205/60 dark:border-stroke-dark rounded-xl overflow-hidden mt-6 bg-white dark:bg-dark-secondary">
+        <CustomTable
+          data={users || []}
           columns={columns}
-          getRowId={(row) => row.userId}
-          pagination
-          showToolbar
-          slots={{
-            toolbar: CustomToolbar,
-          }}
-          className={dataGridClassNames}
-          sx={dataGridSxStyles(isDarkMode)}
+          searchPlaceholder="Search usernames..."
+          searchField="username"
         />
       </div>
     </div>

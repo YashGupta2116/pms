@@ -37,7 +37,7 @@ const Sidebar = () => {
   );
 
   const sidebarClassNames = `fixed flex flex-col h-[100%] justify-between shadow-xl
-    transition-all duration-300 h-full z-40 dark:bg-black overflow-y-auto bg-white
+    transition-all duration-300 h-full z-40 dark:bg-dark-bg overflow-y-auto bg-white
     ${isSidebarCollapsed ? "w-0 hidden" : "w-64"}
   `;
 
@@ -45,8 +45,8 @@ const Sidebar = () => {
     <div className={sidebarClassNames}>
       <div className="flex h-[100%] w-full flex-col justify-start">
         {/* TOP LOGO */}
-        <div className="z-50 flex min-h-[56px] w-64 items-center justify-between bg-white px-6 pt-3 dark:bg-black">
-          <div className="text-xl font-bold text-gray-800 dark:text-white">
+        <div className="z-50 flex min-h-[56px] w-64 items-center justify-between bg-white px-6 pt-3 dark:bg-dark-bg">
+          <div className="text-xl font-black tracking-wider bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400">
             EDLIST
           </div>
           {isSidebarCollapsed ? null : (
@@ -56,7 +56,7 @@ const Sidebar = () => {
                 dispatch(setIsSidebarCollapsed(!isSidebarCollapsed));
               }}
             >
-              <X className="h-6 w-6 text-gray-800 hover:text-gray-500 dark:text-white" />
+              <X className="h-5 w-5 text-gray-800 hover:text-gray-500 dark:text-neutral-300 dark:hover:text-white" />
             </button>
           )}
         </div>
@@ -161,16 +161,18 @@ const SidebarLink = ({ href, icon: Icon, label }: SidebarLinkProps) => {
   return (
     <Link href={href} className="w-full">
       <div
-        className={`relative flex cursor-pointer items-center gap-3 transition-colors hover:bg-gray-100 dark:bg-black dark:hover:bg-gray-700 ${
-          isActive ? "bg-gray-100 text-white dark:bg-gray-600" : ""
-        } justify-start px-8 py-3`}
+        className={`relative flex cursor-pointer items-center gap-3.5 transition-all duration-200 justify-start px-8 py-3
+          ${isActive
+            ? "bg-blue-50/60 text-blue-600 dark:bg-blue-950/15 dark:text-blue-400"
+            : "text-gray-600 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-dark-secondary/40"
+          }`}
       >
         {isActive && (
-          <div className="absolute top-0 left-0 h-[100%] w-[5px] bg-blue-200" />
+          <div className="absolute top-0 left-0 h-full w-[4px] bg-blue-600 dark:bg-blue-500" />
         )}
 
-        <Icon className="h-6 w-6 text-gray-800 dark:text-gray-100" />
-        <span className={`font-medium text-gray-800 dark:text-gray-100`}>
+        <Icon className={`h-5 w-5 transition-colors ${isActive ? "text-blue-600 dark:text-blue-400" : "text-gray-500 dark:text-gray-400"}`} />
+        <span className={`font-semibold text-sm transition-colors ${isActive ? "text-blue-600 dark:text-blue-400" : "text-gray-700 dark:text-gray-200"}`}>
           {label}
         </span>
       </div>

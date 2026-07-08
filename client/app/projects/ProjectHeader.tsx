@@ -78,9 +78,9 @@ const ProjectHeader = ({ activeTab, setActiveTab }: Props) => {
             <input
               type="text"
               placeholder="Search Task"
-              className="dark:border-dark-secondary dark:bg-dark-secondary rounded-md border py-1 pr-4 pl-10 focus:outline-none dark:text-white"
+              className="dark:border-stroke-dark dark:bg-dark-secondary rounded-lg border border-gray-200 py-1.5 pr-4 pl-10 text-sm focus:border-blue-500 focus:outline-none dark:text-white dark:placeholder-gray-400"
             />
-            <Grid3x3 className="absolute top-2 left-3 h-4 w-4 text-gray-400 dark:text-neutral-500" />
+            <Grid3x3 className="absolute top-2.5 left-3.5 h-4 w-4 text-gray-450 dark:text-neutral-500" />
           </div>
         </div>
       </div>
@@ -100,9 +100,8 @@ const TabButton = ({ name, icon, setActiveTab, activeTab }: TabButtonProps) => {
 
   return (
     <button
-      className={`relative flex items-center gap-2 px-1 py-2 text-gray-500 after:absolute after:-bottom-[9px] after:left-0 after:h-[1px] after:w-full hover:text-blue-600 sm:px-2 lg:px-4 dark:text-neutral-500 dark:hover:text-white ${
-        isActive ? "text-blue-600 after:bg-blue-600 dark:text-white" : ""
-      }`}
+      className={`relative flex items-center gap-2 px-1.5 py-2 text-gray-500 after:absolute after:-bottom-[9px] after:left-0 after:h-[2px] after:w-full transition-colors duration-200 hover:text-blue-600 sm:px-2.5 lg:px-4 dark:text-neutral-400 dark:hover:text-white ${isActive ? "text-blue-600 after:bg-blue-600 dark:text-white" : "after:bg-transparent"
+        }`}
       onClick={() => setActiveTab(name)}
     >
       {icon}

@@ -1,56 +1,52 @@
 "use client";
-import { useGetTeamsQuery } from "@/state/api";
-import { useAppSelector } from "../redux";
+
+import { useGetTeamsQuery, Team } from "@/state/api";
 import Header from "@/components/Header";
-import {
-  DataGrid,
-  ExportCsv,
-  FilterPanelTrigger,
-  GridColDef,
-  Toolbar,
-  ToolbarButton,
-} from "@mui/x-data-grid";
-import { dataGridClassNames, dataGridSxStyles } from "@/lib/utils";
+import { CustomTable, ColumnDef } from "@/components/CustomTable";
 
-const CustomToolbar = () => (
-  <Toolbar className="toolbar dark:bg-dark-bg flex gap-2 dark:text-white">
-    <FilterPanelTrigger render={<ToolbarButton />}>Filters</FilterPanelTrigger>
-    <ExportCsv render={<ToolbarButton />}>Export</ExportCsv>
-  </Toolbar>
-);
+type TeamWithUsernames = Team & {
+  productOwnerUsername?: string;
+  projectManagerUsername?: string;
+};
 
-const columns: GridColDef[] = [
-  { field: "id", headerName: "Team ID", width: 100 },
-  { field: "teamName", headerName: "Team Name", width: 200 },
-  { field: "productOwnerUsername", headerName: "Product Owner", width: 200 },
+const columns: ColumnDef<TeamWithUsernames>[] = [
   {
-    field: "projectManagerUsername",
+    headerName: "Team ID",
+    field: "id",
+    className: "font-semibold text-gray-500",
+  },
+  {
+    headerName: "Team Name",
+    field: "teamName",
+    className: "font-bold text-gray-900 dark:text-white text-sm",
+  },
+  {
+    headerName: "Product Owner",
+    field: "productOwnerUsername",
+    className: "text-gray-700 dark:text-gray-300",
+  },
+  {
     headerName: "Project Manager",
-    width: 200,
+    field: "projectManagerUsername",
+    className: "text-gray-700 dark:text-gray-350 dark:text-gray-300",
   },
 ];
 
 const Teams = () => {
   const { data: teams, isLoading, isError } = useGetTeamsQuery();
-  const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
 
-  if (isLoading) return <div>Loading...</div>;
-  if (isError || !teams) return <div>Error fetching users</div>;
+  if (isLoading) return <div className="p-8 text-center text-sm text-gray-400">Loading teams...</div>;
+  if (isError || !teams) return <div className="p-8 text-center text-sm text-red-400">Error fetching teams</div>;
 
   return (
-    <div className="flex w-full flex-col p-8">
+    <div className="flex w-full flex-col p-8 bg-gray-50/30 dark:bg-dark-bg min-h-screen">
       <Header name="Teams" />
-      <div style={{ height: 650, width: "100%" }}>
-        <DataGrid
-          rows={teams || []}
+      <div className="shadow-sm border border-gray-205/60 dark:border-stroke-dark rounded-xl overflow-hidden mt-6 bg-white dark:bg-dark-secondary">
+        <CustomTable
+          data={teams || []}
           columns={columns}
-          pagination
-          showToolbar
-          slots={{
-            toolbar: CustomToolbar,
-          }}
-          className={dataGridClassNames}
-          sx={dataGridSxStyles(isDarkMode)}
+          searchPlaceholder="Search team names..."
+          searchField="teamName"
         />
       </div>
     </div>
