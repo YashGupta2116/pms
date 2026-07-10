@@ -1,12 +1,14 @@
 -- CreateTable
 CREATE TABLE "User" (
-    "id" SERIAL NOT NULL,
-    "cognitoId" TEXT NOT NULL,
+    "userId" SERIAL NOT NULL,
+    "email" TEXT NOT NULL,
     "username" TEXT NOT NULL,
-    "profilePic" TEXT,
-    "teamId" INTEGER NOT NULL,
+    "password" TEXT NOT NULL,
+    "profilePictureUrl" TEXT,
+    "teamId" INTEGER,
+    "refreshTokenVersion" INTEGER NOT NULL DEFAULT 0,
 
-    CONSTRAINT "User_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "User_pkey" PRIMARY KEY ("userId")
 );
 
 -- CreateTable
@@ -14,7 +16,7 @@ CREATE TABLE "Team" (
     "id" SERIAL NOT NULL,
     "teamName" TEXT NOT NULL,
     "productOwnerUserId" INTEGER,
-    "productManagerUserId" INTEGER,
+    "projectManagerUserId" INTEGER,
 
     CONSTRAINT "Team_pkey" PRIMARY KEY ("id")
 );
@@ -24,7 +26,7 @@ CREATE TABLE "Project" (
     "id" SERIAL NOT NULL,
     "name" TEXT NOT NULL,
     "description" TEXT,
-    "startDate" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "startDate" TIMESTAMP(3),
     "endDate" TIMESTAMP(3),
 
     CONSTRAINT "Project_pkey" PRIMARY KEY ("id")
@@ -43,11 +45,11 @@ CREATE TABLE "ProjectTeam" (
 CREATE TABLE "Task" (
     "id" SERIAL NOT NULL,
     "title" TEXT NOT NULL,
-    "descriptio" TEXT,
+    "description" TEXT,
     "status" TEXT,
     "priority" TEXT,
     "tags" TEXT,
-    "startDate" TIMESTAMP(3) DEFAULT CURRENT_TIMESTAMP,
+    "startDate" TIMESTAMP(3),
     "dueDate" TIMESTAMP(3),
     "points" INTEGER,
     "projectId" INTEGER NOT NULL,
@@ -69,7 +71,7 @@ CREATE TABLE "TaskAssignment" (
 -- CreateTable
 CREATE TABLE "Attachment" (
     "id" SERIAL NOT NULL,
-    "fileUrl" TEXT NOT NULL,
+    "fileURL" TEXT NOT NULL,
     "fileName" TEXT,
     "taskId" INTEGER NOT NULL,
     "uploadedById" INTEGER NOT NULL,
@@ -87,14 +89,31 @@ CREATE TABLE "Comment" (
     CONSTRAINT "Comment_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "ActivityLog" (
+    "id" SERIAL NOT NULL,
+    "action" TEXT NOT NULL,
+    "username" TEXT NOT NULL,
+    "timestamp" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "projectId" INTEGER,
+
+    CONSTRAINT "ActivityLog_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
-CREATE UNIQUE INDEX "User_cognitoId_key" ON "User"("cognitoId");
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "User_username_key" ON "User"("username");
 
 -- AddForeignKey
-ALTER TABLE "User" ADD CONSTRAINT "User_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "User" ADD CONSTRAINT "User_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Team" ADD CONSTRAINT "Team_productOwnerUserId_fkey" FOREIGN KEY ("productOwnerUserId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Team" ADD CONSTRAINT "Team_projectManagerUserId_fkey" FOREIGN KEY ("projectManagerUserId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "ProjectTeam" ADD CONSTRAINT "ProjectTeam_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Team"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -103,16 +122,16 @@ ALTER TABLE "ProjectTeam" ADD CONSTRAINT "ProjectTeam_teamId_fkey" FOREIGN KEY (
 ALTER TABLE "ProjectTeam" ADD CONSTRAINT "ProjectTeam_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Task" ADD CONSTRAINT "Task_authorUserId_fkey" FOREIGN KEY ("authorUserId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
 ALTER TABLE "Task" ADD CONSTRAINT "Task_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Task" ADD CONSTRAINT "Task_assignedUserId_fkey" FOREIGN KEY ("assignedUserId") REFERENCES "User"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "Task" ADD CONSTRAINT "Task_authorUserId_fkey" FOREIGN KEY ("authorUserId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "TaskAssignment" ADD CONSTRAINT "TaskAssignment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Task" ADD CONSTRAINT "Task_assignedUserId_fkey" FOREIGN KEY ("assignedUserId") REFERENCES "User"("userId") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "TaskAssignment" ADD CONSTRAINT "TaskAssignment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "TaskAssignment" ADD CONSTRAINT "TaskAssignment_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
@@ -121,10 +140,13 @@ ALTER TABLE "TaskAssignment" ADD CONSTRAINT "TaskAssignment_taskId_fkey" FOREIGN
 ALTER TABLE "Attachment" ADD CONSTRAINT "Attachment_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Attachment" ADD CONSTRAINT "Attachment_uploadedById_fkey" FOREIGN KEY ("uploadedById") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Attachment" ADD CONSTRAINT "Attachment_uploadedById_fkey" FOREIGN KEY ("uploadedById") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Comment" ADD CONSTRAINT "Comment_taskId_fkey" FOREIGN KEY ("taskId") REFERENCES "Task"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Comment" ADD CONSTRAINT "Comment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Comment" ADD CONSTRAINT "Comment_userId_fkey" FOREIGN KEY ("userId") REFERENCES "User"("userId") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ActivityLog" ADD CONSTRAINT "ActivityLog_projectId_fkey" FOREIGN KEY ("projectId") REFERENCES "Project"("id") ON DELETE SET NULL ON UPDATE CASCADE;

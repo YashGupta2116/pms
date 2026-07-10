@@ -4,11 +4,12 @@ import {
   useUpdateTaskStatusMutation,
 } from "@/state/api";
 import { EllipsisVertical, MessageSquareMore, Plus } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import { DndProvider, useDrag, useDrop } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 import { format } from "date-fns";
 import Image from "next/image";
+import ModalTaskDetail from "../Modal/ModalTaskDetail";
 
 type BoardProps = {
   id: string;
@@ -25,6 +26,7 @@ const BoardView = ({ id, setIsModalNewTaskOpen }: BoardProps) => {
   } = useGetTasksQuery({ projectId: Number(id) });
 
   const [updateTaskStatus] = useUpdateTaskStatusMutation();
+  const [selectedTask, setSelectedTask] = useState<TaskType | null>(null);
 
   const moveTask = (taskId: number, toStatus: string) => {
     updateTaskStatus({ taskId, status: toStatus });
@@ -43,9 +45,17 @@ const BoardView = ({ id, setIsModalNewTaskOpen }: BoardProps) => {
             tasks={tasks || []}
             moveTask={moveTask}
             setIsModalNewTaskOpen={setIsModalNewTaskOpen}
+            onTaskClick={(task) => setSelectedTask(task)}
           />
         ))}
       </div>
+      {selectedTask && (
+        <ModalTaskDetail
+          task={tasks?.find((t) => t.id === selectedTask.id) || selectedTask}
+          isOpen={!!selectedTask}
+          onClose={() => setSelectedTask(null)}
+        />
+      )}
     </DndProvider>
   );
 };
@@ -55,6 +65,7 @@ type TaskColumnProps = {
   tasks: TaskType[];
   moveTask: (taskId: number, toStatus: string) => void;
   setIsModalNewTaskOpen: (isOpen: boolean) => void;
+  onTaskClick: (task: TaskType) => void;
 };
 
 const TaskColumn = ({
@@ -62,6 +73,7 @@ const TaskColumn = ({
   tasks,
   moveTask,
   setIsModalNewTaskOpen,
+  onTaskClick,
 }: TaskColumnProps) => {
   const [{ isOver }, drop] = useDrop(() => ({
     accept: "task",
@@ -119,7 +131,7 @@ const TaskColumn = ({
       {tasks
         .filter((task) => task.status === status)
         .map((task) => (
-          <Task key={task.id} task={task} />
+          <Task key={task.id} task={task} onTaskClick={onTaskClick} />
         ))}
     </div>
   );
@@ -127,9 +139,10 @@ const TaskColumn = ({
 
 type TaskProps = {
   task: TaskType;
+  onTaskClick: (task: TaskType) => void;
 };
 
-const Task = ({ task }: TaskProps) => {
+const Task = ({ task, onTaskClick }: TaskProps) => {
   const [{ isDragging }, drag] = useDrag(() => ({
     type: "task",
     item: { id: task.id },
@@ -174,12 +187,13 @@ const Task = ({ task }: TaskProps) => {
       ref={(instance) => {
         drag(instance);
       }}
-      className={`dark:bg-dark-secondary mb-4 rounded-md bg-white shadow ${isDragging ? "opacity-50" : "opacity-100"} `}
+      onClick={() => onTaskClick(task)}
+      className={`dark:bg-dark-secondary mb-4 rounded-md bg-white shadow cursor-pointer transition-shadow hover:shadow-md ${isDragging ? "opacity-50" : "opacity-100"} `}
     >
       {task.attachments && task.attachments.length > 0 && (
         <Image
-          src={`/${task.attachments[0].fileUrl}`}
-          alt={task.attachments[0].fileName}
+          src={task.attachments[0].fileURL.startsWith("http") ? task.attachments[0].fileURL : `/${task.attachments[0].fileURL}`}
+          alt={task.attachments[0].fileName || "Attachment"}
           width={400}
           height={200}
           className="h-auto w-full rounded-t-md"
@@ -239,7 +253,7 @@ const Task = ({ task }: TaskProps) => {
             )}
             {task.author && (
               <Image
-                key={task.author.userId}
+                key={task.author.username}
                 src={`/${task.author.profilePictureUrl!}`}
                 alt={task.author.username}
                 width={30}

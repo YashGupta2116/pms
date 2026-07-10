@@ -53,6 +53,17 @@ const index = () => {
   if (isError || !projects)
     return <div>An error occured while fetching projects</div>;
 
+  if (ganttTasks.length === 0) {
+    return (
+      <div className="max-w-full p-8">
+        <Header name="Projects Timeline" />
+        <div className="mt-6 text-center text-sm font-semibold text-gray-500 dark:text-neutral-400 bg-white dark:bg-dark-secondary rounded-xl border border-gray-200/50 dark:border-stroke-dark p-8 shadow-sm">
+          No projects with valid start and end dates found. Create a project to view the timeline.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="max-w-full p-8">
       <header className="mb-6 flex items-center justify-between gap-4">

@@ -1,9 +1,10 @@
 import { CustomTable, ColumnDef } from "@/components/CustomTable";
 import Header from "@/components/Header";
 import { useGetTasksQuery, Task } from "@/state/api";
-import React from "react";
+import React, { useState } from "react";
 import { format } from "date-fns";
 import { Tag, Shield, Bookmark, Calendar, User } from "lucide-react";
+import ModalTaskDetail from "../Modal/ModalTaskDetail";
 
 type Props = {
   id: string;
@@ -152,6 +153,8 @@ const TableView = ({ id, setIsModalNewTaskOpen }: Props) => {
     isLoading,
   } = useGetTasksQuery({ projectId: Number(id) });
 
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+
   if (isLoading) return <div className="p-8 text-center text-sm text-gray-400">Loading tasks...</div>;
   if (error || !tasks) return <div className="p-8 text-center text-sm text-red-400">An error occurred while fetching tasks</div>;
 
@@ -162,7 +165,7 @@ const TableView = ({ id, setIsModalNewTaskOpen }: Props) => {
           name="Table View"
           buttonComponent={
             <button
-              className="bg-blue-primary flex items-center rounded-lg px-4 py-2 text-white hover:bg-blue-600 transition-colors text-sm font-semibold shadow-sm"
+              className="bg-blue-primary flex items-center rounded-lg px-4 py-2 text-white hover:bg-blue-600 transition-colors text-sm font-semibold shadow-sm cursor-pointer"
               onClick={() => setIsModalNewTaskOpen(true)}
             >
               Add Task
@@ -171,14 +174,22 @@ const TableView = ({ id, setIsModalNewTaskOpen }: Props) => {
           isSmallText
         />
       </div>
-      <div className="shadow-sm border border-gray-205/60 dark:border-stroke-dark rounded-xl overflow-hidden bg-white dark:bg-dark-secondary">
+      <div className="shadow-sm border border-gray-200/60 dark:border-stroke-dark rounded-xl overflow-hidden bg-white dark:bg-dark-secondary">
         <CustomTable
           data={tasks || []}
           columns={columns}
           searchPlaceholder="Search task titles..."
           searchField="title"
+          onRowClick={(row) => setSelectedTask(row)}
         />
       </div>
+      {selectedTask && (
+        <ModalTaskDetail
+          task={tasks?.find((t) => t.id === selectedTask.id) || selectedTask}
+          isOpen={!!selectedTask}
+          onClose={() => setSelectedTask(null)}
+        />
+      )}
     </div>
   );
 };

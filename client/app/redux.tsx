@@ -7,6 +7,7 @@ import {
   Provider,
 } from "react-redux";
 import globalReducer from "@/state";
+import authReducer from "@/state/authSlice";
 import { api } from "@/state/api";
 import { setupListeners } from "@reduxjs/toolkit/query";
 
@@ -46,10 +47,20 @@ const storage =
 const persistConfig = {
   key: "root",
   storage,
+  version: 2,
   whitelist: ["global"],
+  migrate: async (state: any) => {
+    if (!state) {
+      return state;
+    }
+
+    const { auth, ...rest } = state;
+    return rest;
+  },
 };
 const rootReducer = combineReducers({
   global: globalReducer,
+  auth: authReducer,
   [api.reducerPath]: api.reducer,
 });
 const persistedReducer = persistReducer(persistConfig, rootReducer);

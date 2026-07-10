@@ -6,9 +6,10 @@ import { Calendar, User, Tag, Shield, Bookmark } from "lucide-react";
 
 type Props = {
   task: Task;
+  onClick?: () => void;
 };
 
-const TaskCard = ({ task }: Props) => {
+const TaskCard = ({ task, onClick }: Props) => {
   const formattedStartDate = task.startDate
     ? format(new Date(task.startDate), "MMM dd, yyyy")
     : null;
@@ -17,12 +18,15 @@ const TaskCard = ({ task }: Props) => {
     : null;
 
   return (
-    <div className="dark:bg-dark-secondary mb-4 rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition-shadow hover:shadow-md dark:border-stroke-dark dark:text-white">
+    <div
+      onClick={onClick}
+      className={`dark:bg-dark-secondary mb-4 rounded-xl border border-gray-100 bg-white p-5 shadow-sm transition-shadow hover:shadow-md dark:border-stroke-dark dark:text-white ${onClick ? "cursor-pointer" : ""}`}
+    >
       {task.attachments && task.attachments.length > 0 && (
         <div className="mb-4 overflow-hidden rounded-lg">
           <Image
-            src={`/${task.attachments[0].fileUrl}`}
-            alt={task.attachments[0].fileName}
+            src={task.attachments[0].fileURL.startsWith("http") ? task.attachments[0].fileURL : `/${task.attachments[0].fileURL}`}
+            alt={task.attachments[0].fileName || "image"}
             width={400}
             height={200}
             className="h-48 w-full object-cover transition-transform hover:scale-105 duration-300"
@@ -67,12 +71,12 @@ const TaskCard = ({ task }: Props) => {
             <div className="truncate">
               <span className="font-medium text-gray-400">Priority:</span>{" "}
               <span className={`rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase ${task.priority === "Urgent"
-                  ? "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300"
-                  : task.priority === "High"
-                    ? "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
-                    : task.priority === "Medium"
-                      ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
-                      : "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
+                ? "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300"
+                : task.priority === "High"
+                  ? "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300"
+                  : task.priority === "Medium"
+                    ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300"
+                    : "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300"
                 }`}>
                 {task.priority || "None"}
               </span>

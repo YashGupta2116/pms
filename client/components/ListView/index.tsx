@@ -1,7 +1,8 @@
 import { Task, useGetTasksQuery } from "@/state/api";
-import React from "react";
+import React, { useState } from "react";
 import Header from "../Header";
 import TaskCard from "../TaskCard";
+import ModalTaskDetail from "../Modal/ModalTaskDetail";
 
 type Props = {
   id: string;
@@ -14,6 +15,8 @@ const ListView = ({ id, setIsModalNewTaskOpen }: Props) => {
     error,
     isLoading,
   } = useGetTasksQuery({ projectId: Number(id) });
+
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>An error occured while fetching tasks</div>;
@@ -36,9 +39,22 @@ const ListView = ({ id, setIsModalNewTaskOpen }: Props) => {
       </div>
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3 lg:gap-6">
         {tasks && tasks.length > 0
-          ? tasks?.map((task: Task) => <TaskCard key={task.id} task={task} />)
+          ? tasks?.map((task: Task) => (
+              <TaskCard
+                key={task.id}
+                task={task}
+                onClick={() => setSelectedTask(task)}
+              />
+            ))
           : "No Tasks Available"}
       </div>
+      {selectedTask && (
+        <ModalTaskDetail
+          task={tasks?.find((t) => t.id === selectedTask.id) || selectedTask}
+          isOpen={!!selectedTask}
+          onClose={() => setSelectedTask(null)}
+        />
+      )}
     </div>
   );
 };

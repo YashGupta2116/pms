@@ -34,7 +34,7 @@ const DataGridToolbar = () => {
             <div className="flex items-center gap-1.5 opacity-90 pr-2">
                 <div className="h-2 w-2 rounded-full bg-blue-primary animate-pulse" />
                 <span className="text-[10px] font-extrabold tracking-wider text-gray-400 dark:text-neutral-500 uppercase select-none">
-                    EDLIST
+                    PROMANAGE
                 </span>
             </div>
         </Toolbar>

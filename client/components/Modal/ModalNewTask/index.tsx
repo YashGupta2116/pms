@@ -7,6 +7,7 @@ import {
 import React, { useState } from "react";
 import Modal from "..";
 import { formatISO } from "date-fns";
+import { useAppSelector } from "@/app/redux";
 
 type Props = {
   id?: string | null;
@@ -24,12 +25,14 @@ const ModalNewTask = ({ id = null, isOpen, onClose }: Props) => {
   const [tags, setTags] = useState("");
   const [startDate, setStartDate] = useState("");
   const [dueDate, setDueDate] = useState("");
-  const [authorUserId, setAuthorUserId] = useState("");
   const [assignedUserId, setAssignedUserId] = useState("");
   const [projectId, setProjectId] = useState("");
 
+  const currentUser = useAppSelector((state) => state.auth.user);
+  const authorUserId = currentUser?.userId ? String(currentUser.userId) : "";
+
   const handleSubmit = async () => {
-    if (!title && !authorUserId) return;
+    if (!title || !authorUserId) return;
 
     const formatedStartDate = formatISO(new Date(startDate), {
       representation: "complete",
@@ -38,22 +41,39 @@ const ModalNewTask = ({ id = null, isOpen, onClose }: Props) => {
       representation: "complete",
     });
 
-    await createTask({
-      title,
-      description,
-      status,
-      priority,
-      tags,
-      startDate: formatedStartDate,
-      dueDate: formatedDueDate,
-      projectId: id !== null ? Number(id) : Number(projectId),
-      authorUserId: parseInt(authorUserId),
-      assignedUserId: parseInt(assignedUserId),
-    });
+    try {
+      await createTask({
+        title,
+        description,
+        status,
+        priority,
+        tags,
+        startDate: formatedStartDate,
+        dueDate: formatedDueDate,
+        projectId: id !== null ? Number(id) : Number(projectId),
+        authorUserId: parseInt(authorUserId),
+        assignedUserId: assignedUserId ? parseInt(assignedUserId) : undefined,
+      }).unwrap();
+
+      // Reset form states
+      setTitle("");
+      setDescription("");
+      setStatus(Status.ToDo);
+      setPriority(Priority.Backlog);
+      setTags("");
+      setStartDate("");
+      setDueDate("");
+      setAssignedUserId("");
+      setProjectId("");
+      
+      onClose();
+    } catch (err: any) {
+      alert(err?.data?.message || "Failed to create task");
+    }
   };
 
   const isFormValid = () => {
-    return !!title.trim() && !!authorUserId && !(id !== null || projectId);
+    return !!title.trim() && !!authorUserId && (id !== null || !!projectId.trim());
   };
 
   const selectStyles =
@@ -162,27 +182,15 @@ const ModalNewTask = ({ id = null, isOpen, onClose }: Props) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-bold text-gray-400 dark:text-neutral-500 uppercase tracking-wider">Author User ID</label>
-            <input
-              className={inputStyles}
-              type="text"
-              placeholder="e.g. 18"
-              value={authorUserId}
-              onChange={(e) => setAuthorUserId(e.target.value)}
-            />
-          </div>
-          <div className="flex flex-col gap-1.5">
-            <label className="text-[11px] font-bold text-gray-400 dark:text-neutral-500 uppercase tracking-wider">Assigned User ID</label>
-            <input
-              className={inputStyles}
-              type="text"
-              placeholder="e.g. 19"
-              value={assignedUserId}
-              onChange={(e) => setAssignedUserId(e.target.value)}
-            />
-          </div>
+        <div className="flex flex-col gap-1.5">
+          <label className="text-[11px] font-bold text-gray-400 dark:text-neutral-500 uppercase tracking-wider">Assigned User ID</label>
+          <input
+            className={inputStyles}
+            type="text"
+            placeholder="e.g. 19"
+            value={assignedUserId}
+            onChange={(e) => setAssignedUserId(e.target.value)}
+          />
         </div>
 
         {id === null && (

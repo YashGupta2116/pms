@@ -2,7 +2,8 @@
 
 import { useAppDispatch, useAppSelector } from "@/app/redux";
 import { setIsSidebarCollapsed } from "@/state";
-import { useGetProjectsQuery } from "@/state/api";
+import { useGetProjectsQuery, useGetActivitiesQuery, useGetTeamsQuery } from "@/state/api";
+import { format } from "date-fns";
 import {
   AlertCircle,
   AlertOctagon,
@@ -20,17 +21,31 @@ import {
   User,
   Users,
   X,
+  PlusSquare,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import React, { useState } from "react";
+import ModalNewProject from "./Modal/ModalNewProject/index";
 
 const Sidebar = () => {
   const [showProjects, setShowProjects] = useState(true);
   const [showPriority, setShowPriority] = useState(true);
+  const [showActivities, setShowActivities] = useState(true);
+  const [isModalNewProjectOpen, setIsModalNewProjectOpen] = useState(false);
 
+  const currentUser = useAppSelector((state) => state.auth.user);
   const { data: projects } = useGetProjectsQuery();
+  const { data: teams } = useGetTeamsQuery();
+  const { data: activities } = useGetActivitiesQuery(undefined, {
+    pollingInterval: 60000 * 10,
+  });
+
+  const userTeam = teams?.find((t) => t.id === currentUser?.teamId);
+
+  const isLeader = !!currentUser?.isLeader;
+
   const dispatch = useAppDispatch();
   const isSidebarCollapsed = useAppSelector(
     (state) => state.global.isSidebarCollapsed,
@@ -43,11 +58,15 @@ const Sidebar = () => {
 
   return (
     <div className={sidebarClassNames}>
+      <ModalNewProject
+        isOpen={isModalNewProjectOpen}
+        onClose={() => setIsModalNewProjectOpen(false)}
+      />
       <div className="flex h-[100%] w-full flex-col justify-start">
         {/* TOP LOGO */}
         <div className="z-50 flex min-h-[56px] w-64 items-center justify-between bg-white px-6 pt-3 dark:bg-dark-bg">
           <div className="text-xl font-black tracking-wider bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-transparent dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400">
-            EDLIST
+            PROMANAGE
           </div>
           {isSidebarCollapsed ? null : (
             <button
@@ -65,7 +84,7 @@ const Sidebar = () => {
           <Image src="/logo.png" alt="Logo" width={40} height={40} />
           <div>
             <h3 className="text-md font-bold tracking-wide dark:text-gray-200">
-              EDROH TEAM
+              {userTeam?.teamName?.toUpperCase() || "WORKSPACE"}
             </h3>
             <div className="mt-1 flex items-start gap-2">
               <LockIcon className="mt-[0.1rem] h-3 w-3 text-gray-500 dark:text-gray-400" />
@@ -84,17 +103,26 @@ const Sidebar = () => {
         </nav>
 
         {/* PROJECTS LINKS */}
-        <button
-          onClick={() => setShowProjects((prev) => !prev)}
-          className="flex w-full items-center justify-between px-8 py-3 text-gray-500"
-        >
-          <span className="">Projects</span>
-          {showProjects ? (
-            <ChevronUp className="h-5 w-5" />
-          ) : (
-            <ChevronDown className="h-5 w-5" />
-          )}
-        </button>
+        <div className="flex w-full items-center justify-between px-8 py-3.5 text-gray-500 border-t border-gray-100 dark:border-stroke-dark/30 mt-2">
+          <button
+            onClick={() => setShowProjects((prev) => !prev)}
+            className="flex items-center gap-2 hover:text-gray-900 dark:hover:text-white"
+          >
+            <span className="font-semibold text-sm">Projects</span>
+            {showProjects ? (
+              <ChevronUp className="h-4.5 w-4.5" />
+            ) : (
+              <ChevronDown className="h-4.5 w-4.5" />
+            )}
+          </button>
+          <button
+            onClick={() => setIsModalNewProjectOpen(true)}
+            className="p-1 hover:bg-gray-100 rounded-md transition-colors dark:hover:bg-dark-secondary hover:text-gray-900 dark:hover:text-white cursor-pointer"
+            title="Create Project"
+          >
+            <PlusSquare className="h-4.5 w-4.5 text-blue-500 hover:text-blue-600" />
+          </button>
+        </div>
         {/* PROJECTS LIST */}
         {showProjects &&
           projects?.map((project) => (
@@ -141,6 +169,42 @@ const Sidebar = () => {
               href="/priority/backlog"
             />
           </>
+        )}
+
+        {/* RECENT ACTIVITY */}
+        <button
+          onClick={() => setShowActivities((prev) => !prev)}
+          className="flex w-full items-center justify-between px-8 py-3 text-gray-505 dark:text-neutral-400 border-t border-gray-100 dark:border-stroke-dark/30 mt-2"
+        >
+          <span className="font-semibold text-sm">Recent Activity</span>
+          {showActivities ? (
+            <ChevronUp className="h-4.5 w-4.5" />
+          ) : (
+            <ChevronDown className="h-4.5 w-4.5" />
+          )}
+        </button>
+
+        {showActivities && (
+          <div className="px-8 py-2 space-y-4 max-h-[220px] overflow-y-auto pr-2">
+            {activities && activities.length > 0 ? (
+              activities.slice(0, 8).map((activity) => (
+                <div key={activity.id} className="relative pl-4 border-l-2 border-blue-100 dark:border-stroke-dark/50 pb-2">
+                  <div className="absolute -left-[5px] top-1.5 h-2 w-2 rounded-full bg-blue-500" />
+                  <p className="text-[10px] font-bold text-gray-800 dark:text-gray-200">
+                    {activity.username}
+                  </p>
+                  <p className="text-[10px] text-gray-500 dark:text-neutral-400 leading-tight">
+                    {activity.action}
+                  </p>
+                  <span className="text-[8px] text-gray-400 dark:text-neutral-500">
+                    {format(new Date(activity.timestamp), "HH:mm")}
+                  </span>
+                </div>
+              ))
+            ) : (
+              <p className="text-[10px] text-gray-400 dark:text-neutral-500">No recent activity.</p>
+            )}
+          </div>
         )}
       </div>
     </div>

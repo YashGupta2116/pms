@@ -58,6 +58,27 @@ const index = ({ id, setIsModalNewTaskOpen }: Props) => {
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>An error occured while fetching tasks</div>;
 
+  if (ganttTasks.length === 0) {
+    return (
+      <div className="px-4 xl:px-6 py-6">
+        <div className="flex items-center justify-between">
+          <h1 className="text-lg font-bold tracking-tight text-gray-900 dark:text-white">
+            Project Tasks Timeline
+          </h1>
+          <button
+            className="bg-blue-primary flex items-center rounded-lg px-4 py-2 text-white hover:bg-blue-600 transition-colors text-sm font-semibold shadow-sm cursor-pointer"
+            onClick={() => setIsModalNewTaskOpen(true)}
+          >
+            Add New Task
+          </button>
+        </div>
+        <div className="mt-6 text-center text-sm font-semibold text-gray-500 dark:text-neutral-400 bg-white dark:bg-dark-secondary rounded-xl border border-gray-200/50 dark:border-stroke-dark p-8 shadow-sm">
+          No tasks found with valid start and due dates. Create a task to view the timeline.
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="px-4 xl:px-6">
       <div className="flex flex-wrap items-center justify-between gap-4 py-6">

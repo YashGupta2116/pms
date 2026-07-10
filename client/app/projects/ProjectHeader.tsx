@@ -8,32 +8,27 @@ import {
   Share2,
   Table,
 } from "lucide-react";
-import React, { useState } from "react";
-import ModalNewProject from "@/components/Modal/ModalNewProject";
+import React from "react";
 
 type Props = {
   activeTab: string;
   setActiveTab: (tabName: string) => void;
+  setIsModalNewTaskOpen: (isOpen: boolean) => void;
+  projectName: string;
 };
 
-const ProjectHeader = ({ activeTab, setActiveTab }: Props) => {
-  const [isModalNewProjectOpen, setIsModalNewProjectOpen] = useState(false);
-
+const ProjectHeader = ({ activeTab, setActiveTab, setIsModalNewTaskOpen, projectName }: Props) => {
   return (
     <div className="px-4 xl:px-6">
-      <ModalNewProject
-        isOpen={isModalNewProjectOpen}
-        onClose={() => setIsModalNewProjectOpen(false)}
-      />
       <div className="pt-6 pb-6 lg:pt-8 lg:pb-4">
         <Header
-          name="Product Design Development"
+          name={projectName}
           buttonComponent={
             <button
-              className="bg-blue-primary flex items-center rounded-md px-3 py-2 text-white hover:bg-blue-600"
-              onClick={() => setIsModalNewProjectOpen(true)}
+              className="bg-blue-primary flex items-center rounded-md px-3 py-2 text-white hover:bg-blue-600 cursor-pointer"
+              onClick={() => setIsModalNewTaskOpen(true)}
             >
-              <PlusSquare className="mr-2 h-5 w-5" /> New Boards
+              <PlusSquare className="mr-2 h-5 w-5" /> New Task
             </button>
           }
         />

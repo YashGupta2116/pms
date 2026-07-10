@@ -15,6 +15,7 @@ type Props<T> = {
     columns: ColumnDef<T>[];
     searchPlaceholder?: string;
     searchField?: keyof T;
+    onRowClick?: (row: T) => void;
 };
 
 export function CustomTable<T extends { id?: number | string; userId?: number | string; teamId?: number | string }>({
@@ -22,6 +23,7 @@ export function CustomTable<T extends { id?: number | string; userId?: number | 
     columns,
     searchPlaceholder = "Search...",
     searchField,
+    onRowClick,
 }: Props<T>) {
     const [searchQuery, setSearchQuery] = useState("");
     const [currentPage, setCurrentPage] = useState(1);
@@ -102,7 +104,8 @@ export function CustomTable<T extends { id?: number | string; userId?: number | 
                                 return (
                                     <tr
                                         key={rowId}
-                                        className="group border-b border-gray-50 hover:bg-blue-50/20 dark:border-stroke-dark/40 dark:hover:bg-blue-950/5 transition-colors duration-200"
+                                        onClick={() => onRowClick?.(row)}
+                                        className={`group border-b border-gray-50 hover:bg-blue-50/20 dark:border-stroke-dark/40 dark:hover:bg-blue-950/5 transition-colors duration-200 ${onRowClick ? "cursor-pointer" : ""}`}
                                     >
                                         {columns.map((col, colIdx) => {
                                             const rawValue = col.field ? (row as any)[col.field] : undefined;

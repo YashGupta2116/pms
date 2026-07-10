@@ -1,4 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { setCredentials, clearCredentials } from "./authSlice";
 
 export interface Project {
   id: number;
@@ -28,14 +29,26 @@ export interface User {
   username: string;
   email: string;
   profilePictureUrl?: string;
-  cognitoId?: string;
   teamId?: number;
+  role?: "Product Owner" | "Project Manager" | "Team Member" | "Unassigned";
+  isLeader?: boolean;
+}
+
+export interface Comment {
+  id: number;
+  text: string;
+  taskId: number;
+  userId: number;
+  user?: {
+    username: string;
+    profilePictureUrl?: string;
+  };
 }
 
 export interface Attachment {
   id: number;
-  fileUrl: string;
-  fileName: string;
+  fileURL: string;
+  fileName?: string;
   taskId: number;
   uploadedById: number;
 }
@@ -66,15 +79,58 @@ export interface SearchResults {
   users?: User[];
 }
 
+export interface ActivityLog {
+  id: number;
+  action: string;
+  username: string;
+  timestamp: string;
+}
+
 export interface Team {
-  teamId: number;
+  id: number;
   teamName: string;
   productOwnerUserId?: number;
   projectManagerUserId?: number;
 }
 
+const baseQuery = fetchBaseQuery({
+  baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL,
+  credentials: "include",
+  prepareHeaders: (headers, { getState }) => {
+    const token = (getState() as any).auth?.token;
+    if (token) {
+      headers.set("authorization", `Bearer ${token}`);
+    }
+    return headers;
+  },
+});
+
+const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
+  let result = await baseQuery(args, api, extraOptions);
+  if (result.error && result.error.status === 401) {
+    // Attempt token refresh
+    const refreshResult = await baseQuery(
+      {
+        url: "auth/refresh",
+        method: "POST",
+      },
+      api,
+      extraOptions,
+    );
+    if (refreshResult.data) {
+      const data = refreshResult.data as { token: string; user: User };
+      api.dispatch(setCredentials({ token: data.token, user: data.user }));
+      // Retry original request
+      result = await baseQuery(args, api, extraOptions);
+    } else {
+      api.dispatch(clearCredentials());
+    }
+  }
+  return result;
+};
+
 export const api = createApi({
-  baseQuery: fetchBaseQuery({ baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL }),
+  baseQuery: baseQueryWithReauth,
   reducerPath: "api",
   tagTypes: ["Projects", "Tasks", "Users", "Teams"],
   endpoints: (build) => ({
@@ -141,6 +197,141 @@ export const api = createApi({
       query: () => "teams",
       providesTags: ["Teams"],
     }),
+
+    createTeam: build.mutation<Team, Partial<Team>>({
+      query: (team) => ({
+        url: "teams",
+        method: "POST",
+        body: team,
+      }),
+      invalidatesTags: ["Teams", "Users", "Projects"],
+    }),
+
+    joinTeam: build.mutation<{ message: string; user: User }, number>({
+      query: (teamId) => ({
+        url: `teams/${teamId}/join`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Teams", "Users", "Projects"],
+    }),
+
+    login: build.mutation<{ message: string; token: string; user: User }, any>({
+      query: (credentials) => ({
+        url: "auth/login",
+        method: "POST",
+        body: credentials,
+      }),
+    }),
+
+    register: build.mutation<
+      { message: string; token: string; user: User },
+      any
+    >({
+      query: (userData) => ({
+        url: "auth/register",
+        method: "POST",
+        body: userData,
+      }),
+    }),
+
+    logout: build.mutation<{ message: string }, void>({
+      query: () => ({
+        url: "auth/logout",
+        method: "POST",
+      }),
+    }),
+
+    refresh: build.mutation<{ token: string; user: User }, void>({
+      query: () => ({
+        url: "auth/refresh",
+        method: "POST",
+      }),
+    }),
+
+    createComment: build.mutation<
+      Comment,
+      { taskId: number; text: string; userId?: number }
+    >({
+      query: ({ taskId, text, userId }) => ({
+        url: `tasks/${taskId}/comments`,
+        method: "POST",
+        body: { text, userId },
+      }),
+      invalidatesTags: ["Tasks"],
+    }),
+
+    createAttachment: build.mutation<
+      Attachment,
+      {
+        taskId: number;
+        fileURL: string;
+        fileName?: string;
+        uploadedById?: number;
+      }
+    >({
+      query: ({ taskId, fileURL, fileName, uploadedById }) => ({
+        url: `tasks/${taskId}/attachments`,
+        method: "POST",
+        body: { fileURL, fileName, uploadedById },
+      }),
+      invalidatesTags: ["Tasks"],
+    }),
+
+    updateUserTeam: build.mutation<
+      User,
+      { userId: number; teamId: number | null }
+    >({
+      query: ({ userId, teamId }) => ({
+        url: `users/${userId}/team`,
+        method: "PATCH",
+        body: { teamId },
+      }),
+      invalidatesTags: ["Users"],
+    }),
+
+    updateTeamLeadership: build.mutation<
+      Team,
+      {
+        teamId: number;
+        productOwnerUserId: number | null;
+        projectManagerUserId: number | null;
+      }
+    >({
+      query: ({ teamId, productOwnerUserId, projectManagerUserId }) => ({
+        url: `teams/${teamId}/leadership`,
+        method: "PATCH",
+        body: { productOwnerUserId, projectManagerUserId },
+      }),
+      invalidatesTags: ["Teams"],
+    }),
+
+    assignTeamToProject: build.mutation<
+      any,
+      { projectId: number; teamId: number }
+    >({
+      query: ({ projectId, teamId }) => ({
+        url: `projects/${projectId}/teams`,
+        method: "POST",
+        body: { teamId },
+      }),
+      invalidatesTags: ["Projects", "Teams"],
+    }),
+
+    removeTeamFromProject: build.mutation<
+      any,
+      { projectId: number; teamId: number }
+    >({
+      query: ({ projectId, teamId }) => ({
+        url: `projects/${projectId}/teams/${teamId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Projects", "Teams"],
+    }),
+
+    getActivities: build.query<ActivityLog[], void>({
+      query: () => "activities",
+      providesTags: ["Tasks", "Projects", "Users", "Teams"],
+    }),
   }),
 });
 
@@ -153,5 +344,18 @@ export const {
   useSearchQuery,
   useGetUsersQuery,
   useGetTeamsQuery,
+  useCreateTeamMutation,
+  useJoinTeamMutation,
   useGetUserTasksQuery,
+  useLoginMutation,
+  useRegisterMutation,
+  useLogoutMutation,
+  useRefreshMutation,
+  useCreateCommentMutation,
+  useCreateAttachmentMutation,
+  useUpdateUserTeamMutation,
+  useUpdateTeamLeadershipMutation,
+  useAssignTeamToProjectMutation,
+  useRemoveTeamFromProjectMutation,
+  useGetActivitiesQuery,
 } = api;

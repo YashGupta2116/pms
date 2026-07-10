@@ -4,12 +4,17 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
+import cookieParser from "cookie-parser";
+
 // ROUTE IMPORTS
 import projectRoutes from "./routes/project.routes.js";
 import taskRoutes from "./routes/task.routes.js";
 import searchRoutes from "./routes/search.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import teamRoutes from "./routes/team.routes.js";
+import authRoutes from "./routes/auth.routes.js";
+import activityRoutes from "./routes/activity.routes.js";
+import { authMiddleware } from "./middleware/auth.middleware.js";
 
 // Configs
 dotenv.config();
@@ -22,18 +27,26 @@ app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
 app.use(morgan("common"));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
-app.use(cors());
+app.use(cookieParser());
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    credentials: true,
+  })
+);
 
 // Routes
 app.get("/", (req, res) => {
   res.send("This is home route");
 });
 
-app.use("/projects", projectRoutes);
-app.use("/tasks", taskRoutes);
-app.use("/search", searchRoutes);
-app.use("/users", userRoutes);
-app.use("/teams", teamRoutes);
+app.use("/auth", authRoutes);
+app.use("/projects", authMiddleware, projectRoutes);
+app.use("/tasks", authMiddleware, taskRoutes);
+app.use("/search", authMiddleware, searchRoutes);
+app.use("/users", authMiddleware, userRoutes);
+app.use("/teams", authMiddleware, teamRoutes);
+app.use("/activities", authMiddleware, activityRoutes);
 
 // Server
 

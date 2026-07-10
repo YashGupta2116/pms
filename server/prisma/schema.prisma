@@ -22,10 +22,12 @@ datasource db {
 
 model User {
   userId            Int     @id @default(autoincrement())
-  cognitoId         String  @unique
+  email             String  @unique
   username          String  @unique
+  password          String
   profilePictureUrl String?
   teamId            Int?
+  refreshTokenVersion Int   @default(0)
 
   authoredTasks   Task[]           @relation("TaskAuthor")
   assignedTasks   Task[]           @relation("TaskAssignee")
@@ -33,6 +35,8 @@ model User {
   attachments     Attachment[]
   comments        Comment[]
   team            Team?            @relation(fields: [teamId], references: [id])
+  productOwnerTeams Team[]         @relation("TeamProductOwner")
+  projectManagerTeams Team[]       @relation("TeamProjectManager")
 }
 
 model Team {
@@ -42,6 +46,8 @@ model Team {
   projectManagerUserId Int?
   projectTeams         ProjectTeam[]
   user                 User[]
+  productOwnerUser     User?         @relation("TeamProductOwner", fields: [productOwnerUserId], references: [userId], onDelete: SetNull, onUpdate: Cascade)
+  projectManagerUser   User?         @relation("TeamProjectManager", fields: [projectManagerUserId], references: [userId], onDelete: SetNull, onUpdate: Cascade)
 }
 
 model Project {
@@ -52,6 +58,7 @@ model Project {
   endDate      DateTime?
   tasks        Task[]
   projectTeams ProjectTeam[]
+  activityLogs ActivityLog[]
 }
 
 model ProjectTeam {
@@ -112,4 +119,13 @@ model Comment {
 
   task Task @relation(fields: [taskId], references: [id])
   user User @relation(fields: [userId], references: [userId])
+}
+
+model ActivityLog {
+  id        Int      @id @default(autoincrement())
+  action    String
+  username  String
+  timestamp DateTime @default(now())
+  projectId Int?
+  project   Project? @relation(fields: [projectId], references: [id])
 }

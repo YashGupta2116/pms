@@ -2,6 +2,7 @@
 
 import { Priority, useGetUserTasksQuery, Task } from "@/state/api";
 import { useState } from "react";
+import { useAppSelector } from "@/app/redux";
 import ModalNewTask from "../Modal/ModalNewTask";
 import Header from "../Header";
 import TaskCard from "../TaskCard";
@@ -49,18 +50,18 @@ const columns: ColumnDef<Task>[] = [
     field: "priority",
     renderCell: ({ value }) => {
       const priorityStr = String(value);
-      let colorClass = "bg-slate-100 text-slate-700 dark:bg-slate-900/40 dark:text-slate-300";
+      let colorClass = "bg-slate-100 text-slate-750 dark:bg-slate-900/40 dark:text-slate-300";
       if (priorityStr === "Urgent") {
-        colorClass = "bg-red-50 text-red-700 dark:bg-red-950/40 dark:text-red-300";
+        colorClass = "bg-red-50 text-red-750 dark:bg-red-950/40 dark:text-red-300";
       } else if (priorityStr === "High") {
-        colorClass = "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300";
+        colorClass = "bg-amber-50 text-amber-750 dark:bg-amber-950/40 dark:text-amber-300";
       } else if (priorityStr === "Medium") {
-        colorClass = "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300";
+        colorClass = "bg-emerald-50 text-emerald-750 dark:bg-emerald-950/40 dark:text-emerald-300";
       } else if (priorityStr === "Low") {
-        colorClass = "bg-blue-50 text-blue-700 dark:bg-blue-950/40 dark:text-blue-300";
+        colorClass = "bg-blue-50 text-blue-750 dark:bg-blue-950/40 dark:text-blue-300";
       }
       return (
-        <span className={`inline-flex items-center rounded px-2 py-0.5 text-[10px] font-bold uppercase ${colorClass}`}>
+        <span className={`inline-flex items-center rounded px-2.5 py-0.5 text-xs font-semibold uppercase ${colorClass}`}>
           {priorityStr}
         </span>
       );
@@ -152,12 +153,13 @@ const DynamicPriorityPage = ({ priority }: Props) => {
   const [view, setView] = useState("list");
   const [isModalNewTaskOpen, setIsModalNewTaskOpen] = useState(false);
 
-  const userId = 1;
+  const currentUser = useAppSelector((state) => state.auth.user);
+  const userId = currentUser?.userId || null;
   const {
     data: userTasksData,
     isLoading,
     isError: isTasksError,
-  } = useGetUserTasksQuery(userId, {
+  } = useGetUserTasksQuery(userId ?? 0, {
     skip: userId === null,
   });
 
