@@ -18,18 +18,15 @@ const Settings = () => {
   const currentUser = useAppSelector((state) => state.auth.user);
   const [activeTab, setActiveTab] = useState("personal");
 
-  // Query Hooks
   const { data: teams, isLoading: isTeamsLoading } = useGetTeamsQuery();
   const { data: users, isLoading: isUsersLoading } = useGetUsersQuery();
   const { data: projects, isLoading: isProjectsLoading } = useGetProjectsQuery();
 
-  // Mutation Hooks
   const [updateUserTeam, { isLoading: isUserTeamUpdating }] = useUpdateUserTeamMutation();
   const [updateTeamLeadership, { isLoading: isLeadershipUpdating }] = useUpdateTeamLeadershipMutation();
   const [assignTeamToProject, { isLoading: isAssigningTeam }] = useAssignTeamToProjectMutation();
   const [removeTeamFromProject, { isLoading: isRemovingTeam }] = useRemoveTeamFromProjectMutation();
 
-  // Selected state for management forms
   const [selectedUserId, setSelectedUserId] = useState("");
   const [selectedTeamId, setSelectedTeamId] = useState("");
 

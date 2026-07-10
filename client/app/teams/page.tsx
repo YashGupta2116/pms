@@ -30,7 +30,6 @@ const Teams = () => {
     try {
       await joinTeam(teamId).unwrap();
 
-      // Update local Redux store
       dispatch(updateUserTeamId({ teamId }));
       alert("Joined team successfully!");
     } catch (err: any) {

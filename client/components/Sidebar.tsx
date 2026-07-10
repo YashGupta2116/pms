@@ -52,7 +52,7 @@ const Sidebar = () => {
   );
 
   const sidebarClassNames = `fixed flex flex-col h-[100%] justify-between shadow-xl
-    transition-all duration-300 h-full z-40 dark:bg-dark-bg overflow-y-auto bg-white
+    transition-all duration-300 h-full z-50 dark:bg-dark-bg overflow-y-auto bg-white
     ${isSidebarCollapsed ? "w-0 hidden" : "w-64"}
   `;
 

@@ -35,7 +35,6 @@ const ModalInviteTeam = ({ isOpen, onClose, team }: Props) => {
     }
   };
 
-  // Filter users: exclude those already in the team and match search query
   const eligibleUsers = React.useMemo(() => {
     if (!users) return [];
     return users.filter((u) => {

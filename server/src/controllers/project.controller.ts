@@ -68,7 +68,6 @@ export const createProject = async (
       },
     });
 
-    // Automatically link the newly created project to the creator's team
     await prisma.projectTeam.create({
       data: {
         projectId: newProject.id,

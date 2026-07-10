@@ -11,25 +11,24 @@ export const getTeams = async (req: Request, res: Response) => {
   }
 
   try {
-    // Return all teams so users can see and join them
     const teams = await prisma.team.findMany();
 
     const teamsWithUsernames = await Promise.all(
       teams.map(async (team: any) => {
         const productOwner = team.productOwnerUserId
           ? await prisma.user.findUnique({
-              where: {
-                userId: team.productOwnerUserId,
-              },
-              select: { username: true },
-            })
+            where: {
+              userId: team.productOwnerUserId,
+            },
+            select: { username: true },
+          })
           : null;
 
         const projectManager = team.projectManagerUserId
           ? await prisma.user.findUnique({
-              where: { userId: team.projectManagerUserId },
-              select: { username: true },
-            })
+            where: { userId: team.projectManagerUserId },
+            select: { username: true },
+          })
           : null;
 
         return {
@@ -65,7 +64,6 @@ export const createTeam = async (
   }
 
   try {
-    // Create the team
     const newTeam = await prisma.team.create({
       data: {
         teamName,
@@ -74,7 +72,6 @@ export const createTeam = async (
       },
     });
 
-    // Automatically assign the creator user to this new team
     await prisma.user.update({
       where: { userId: requestingUserId },
       data: { teamId: newTeam.id },

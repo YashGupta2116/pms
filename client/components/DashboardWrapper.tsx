@@ -7,6 +7,7 @@ import AuthPage from "./AuthPage";
 import StoreProvider, { useAppSelector, useAppDispatch } from "@/app/redux";
 import { useRefreshMutation } from "@/state/api";
 import { setCredentials } from "@/state/authSlice";
+import { setIsSidebarCollapsed } from "@/state";
 
 const DashboardLayout = ({ children }: { children: ReactNode }) => {
   const dispatch = useAppDispatch();
@@ -14,6 +15,27 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
     (state) => state.global.isSidebarCollapsed,
   );
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
+
+  useEffect(() => {
+    let wasMobile = window.innerWidth < 768;
+
+    if (wasMobile) {
+      dispatch(setIsSidebarCollapsed(true));
+    } else {
+      dispatch(setIsSidebarCollapsed(false));
+    }
+
+    const handleResize = () => {
+      const isMobile = window.innerWidth < 768;
+      if (isMobile !== wasMobile) {
+        wasMobile = isMobile;
+        dispatch(setIsSidebarCollapsed(isMobile));
+      }
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, [dispatch]);
   const token = useAppSelector((state) => state.auth.token);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [refresh] = useRefreshMutation();
@@ -32,7 +54,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
         const result = await refresh().unwrap();
         dispatch(setCredentials({ token: result.token, user: result.user }));
       } catch (err) {
-        // Refresh token invalid or expired, proceed to login
+
       } finally {
         setIsCheckingAuth(false);
       }
@@ -61,6 +83,15 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
     <div className="flex min-h-screen w-full bg-gray-50 text-gray-900 dark:bg-dark-bg dark:text-gray-100">
       {/* Sidebar */}
       <Sidebar />
+
+      {/* Backdrop overlay for mobile screens when sidebar is open */}
+      {!isSidebarCollapsed && (
+        <div
+          className="fixed inset-0 z-40 bg-black/40 transition-opacity duration-300 md:hidden"
+          onClick={() => dispatch(setIsSidebarCollapsed(true))}
+        />
+      )}
+
       <main
         className={`flex w-full flex-col main-bg-gradient ${isSidebarCollapsed ? "" : "md:pl-64"}`}
       >

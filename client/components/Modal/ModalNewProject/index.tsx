@@ -33,7 +33,6 @@ const ModalNewProject = ({ isOpen, onClose }: Props) => {
         endDate: formatedEndDate,
       }).unwrap();
 
-      // Reset state fields
       setProjectName("");
       setDescription("");
       setStartDate("");

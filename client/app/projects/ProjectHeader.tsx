@@ -35,8 +35,8 @@ const ProjectHeader = ({ activeTab, setActiveTab, setIsModalNewTaskOpen, project
       </div>
 
       {/* TABS */}
-      <div className="dark:border-stroke-dark flex flex-wrap-reverse gap-2 border-y border-gray-200 pt-2 pb-[8px] md:items-center">
-        <div className="flex flex-1 items-center gap-2 md:gap-4">
+      <div className="dark:border-stroke-dark flex flex-col gap-3 border-y border-gray-200 py-2 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap pb-1 md:pb-0 scrollbar-none">
           <TabButton
             name="Board"
             icon={<Grid3x3 className="h-5 w-5" />}
@@ -62,18 +62,20 @@ const ProjectHeader = ({ activeTab, setActiveTab, setIsModalNewTaskOpen, project
             activeTab={activeTab}
           />
         </div>
-        <div className="flex items-center gap-2">
-          <button className="text-gray-500 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-gray-300">
-            <Filter className="h-5 w-5" />
-          </button>
-          <button className="text-gray-500 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-gray-300">
-            <Share2 className="h-5 w-5" />
-          </button>
-          <div className="relative">
+        <div className="flex items-center gap-3 self-end md:self-auto w-full md:w-auto justify-between md:justify-end">
+          <div className="flex items-center gap-2">
+            <button className="text-gray-500 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-gray-300">
+              <Filter className="h-5 w-5" />
+            </button>
+            <button className="text-gray-500 hover:text-gray-600 dark:text-neutral-500 dark:hover:text-gray-300">
+              <Share2 className="h-5 w-5" />
+            </button>
+          </div>
+          <div className="relative flex-1 md:flex-initial max-w-[200px]">
             <input
               type="text"
               placeholder="Search Task"
-              className="dark:border-stroke-dark dark:bg-dark-secondary rounded-lg border border-gray-200 py-1.5 pr-4 pl-10 text-sm focus:border-blue-500 focus:outline-none dark:text-white dark:placeholder-gray-400"
+              className="w-full dark:border-stroke-dark dark:bg-dark-secondary rounded-lg border border-gray-200 py-1.5 pr-4 pl-10 text-sm focus:border-blue-500 focus:outline-none dark:text-white dark:placeholder-gray-400"
             />
             <Grid3x3 className="absolute top-2.5 left-3.5 h-4 w-4 text-gray-450 dark:text-neutral-500" />
           </div>

@@ -9,18 +9,15 @@ import { setCredentials } from "@/state/authSlice";
 export default function AuthPage() {
   const dispatch = useAppDispatch();
   const [isSignIn, setIsSignIn] = useState(true);
-  
-  // Form fields
+
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  // Error/Success state
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  // Mutations
   const [login, { isLoading: isLoginLoading }] = useLoginMutation();
   const [register, { isLoading: isRegisterLoading }] = useRegisterMutation();
 
@@ -45,9 +42,8 @@ export default function AuthPage() {
           usernameOrEmail: email,
           password,
         }).unwrap();
-        
+
         setSuccess("Signed in successfully!");
-        // Small delay to show success animation
         setTimeout(() => {
           dispatch(setCredentials({ token: result.token, user: result.user }));
         }, 800);
@@ -88,14 +84,11 @@ export default function AuthPage() {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-slate-50 px-4 py-12 dark:bg-[#0b0f19]">
-      {/* Background Decorative Blobs */}
       <div className="absolute top-1/4 left-1/4 h-96 w-96 -translate-x-1/2 rounded-full bg-blue-400/20 blur-3xl dark:bg-blue-600/10"></div>
       <div className="absolute bottom-1/4 right-1/4 h-96 w-96 translate-x-1/2 rounded-full bg-purple-400/20 blur-3xl dark:bg-purple-600/10"></div>
 
-      {/* Main Glass Container */}
       <div className="relative w-full max-w-md rounded-2xl border border-white/20 bg-white/70 p-8 shadow-2xl backdrop-blur-xl transition-all duration-300 dark:border-neutral-800/40 dark:bg-neutral-900/60 sm:p-10">
-        
-        {/* Logo/Branding */}
+
         <div className="mb-8 text-center">
           <div className="inline-block bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 bg-clip-text text-3xl font-black tracking-wider text-transparent dark:from-blue-400 dark:via-indigo-400 dark:to-purple-400">
             PROMANAGE
@@ -105,31 +98,27 @@ export default function AuthPage() {
           </p>
         </div>
 
-        {/* Tab Selection */}
         <div className="mb-6 flex rounded-lg bg-gray-100 p-1 dark:bg-neutral-800">
           <button
             onClick={() => handleTabChange(true)}
-            className={`flex-1 rounded-md py-2.5 text-center text-sm font-semibold transition-all duration-250 ${
-              isSignIn
+            className={`flex-1 rounded-md py-2.5 text-center text-sm font-semibold transition-all duration-250 ${isSignIn
                 ? "bg-white text-gray-900 shadow-sm dark:bg-neutral-700 dark:text-white"
                 : "text-gray-500 hover:text-gray-900 dark:text-neutral-400 dark:hover:text-white"
-            }`}
+              }`}
           >
             Sign In
           </button>
           <button
             onClick={() => handleTabChange(false)}
-            className={`flex-1 rounded-md py-2.5 text-center text-sm font-semibold transition-all duration-250 ${
-              !isSignIn
+            className={`flex-1 rounded-md py-2.5 text-center text-sm font-semibold transition-all duration-250 ${!isSignIn
                 ? "bg-white text-gray-900 shadow-sm dark:bg-neutral-700 dark:text-white"
                 : "text-gray-500 hover:text-gray-900 dark:text-neutral-400 dark:hover:text-white"
-            }`}
+              }`}
           >
             Sign Up
           </button>
         </div>
 
-        {/* Form Messages */}
         {error && (
           <div className="mb-4 flex items-center gap-3 rounded-lg bg-red-50 p-3.5 text-sm font-medium text-red-700 dark:bg-red-950/20 dark:text-red-405">
             <AlertCircle className="h-5 w-5 shrink-0" />

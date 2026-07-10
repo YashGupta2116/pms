@@ -32,7 +32,7 @@ const Search = () => {
   }, [handleSearch.cancel]);
 
   return (
-    <div className="container h-full w-[100%] p-8">
+    <div className="container mx-auto h-full w-[100%] p-8">
       <div className="mb-6">
         <Header name="Search" />
         <p className="text-xs text-gray-500 dark:text-neutral-400 mt-1.5">

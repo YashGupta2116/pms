@@ -10,6 +10,7 @@ import {
 import React, { useMemo, useState } from "react";
 import { useAppSelector } from "../redux";
 import Header from "@/components/Header";
+import Link from "next/link";
 import ModalNewTeam from "@/components/Modal/ModalNewTeam";
 import ModalNewProject from "@/components/Modal/ModalNewProject";
 import { CustomTable, ColumnDef } from "@/components/CustomTable";
@@ -137,7 +138,6 @@ const HomePage = () => {
 
   const isDarkMode = useAppSelector((state) => state.global.isDarkMode);
 
-  // Filter tasks table
   const displayedTasks = useMemo(() => {
     if (!tasks) return [];
     if (filterMyTasks && currentUser?.userId) {
@@ -182,12 +182,12 @@ const HomePage = () => {
             >
               Create a Team
             </button>
-            <a
+            <Link
               href="/teams"
               className="flex items-center justify-center rounded-xl border border-gray-200 bg-white dark:border-stroke-dark dark:bg-dark-tertiary px-5 py-2.5 text-xs font-bold text-gray-700 dark:text-white shadow-sm hover:bg-gray-50 dark:hover:bg-dark-secondary transition-all cursor-pointer"
             >
               Join a Team
-            </a>
+            </Link>
           </div>
         </div>
       </div>
@@ -228,7 +228,6 @@ const HomePage = () => {
     );
   }
 
-  // Stat metrics calculations
   const totalProjects = projects?.length || 0;
   const totalTasks = tasks?.length || 0;
   const urgentTasks = tasks?.filter((t) => t.priority === "Urgent").length || 0;
@@ -265,18 +264,18 @@ const HomePage = () => {
 
   const chartColors = isDarkMode
     ? {
-        bar: "#3b82f6",
-        barGrid: "#2d3135",
-        text: "#9ca3af",
-      }
+      bar: "#3b82f6",
+      barGrid: "#2d3135",
+      text: "#9ca3af",
+    }
     : {
-        bar: "#2563eb",
-        barGrid: "#e5e7eb",
-        text: "#4b5563",
-      };
+      bar: "#2563eb",
+      barGrid: "#e5e7eb",
+      text: "#4b5563",
+    };
 
   return (
-    <div className="container h-full w-[100%] p-8">
+    <div className="container mx-auto h-full w-[100%] p-8">
       {/* HEADER SECTION */}
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>

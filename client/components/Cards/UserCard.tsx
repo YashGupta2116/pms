@@ -8,7 +8,6 @@ type Props = {
 };
 
 const UserCard = ({ user }: Props) => {
-  // Get initials for fallback avatar
   const initials = user.username
     ? user.username
       .split(" ")

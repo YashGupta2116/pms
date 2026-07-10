@@ -29,7 +29,6 @@ export function CustomTable<T extends { id?: number | string; userId?: number | 
     const [currentPage, setCurrentPage] = useState(1);
     const rowsPerPage = 10;
 
-    // Filter logic
     const filteredData = React.useMemo(() => {
         if (!searchQuery.trim() || !searchField) return data;
         return data.filter((row) => {
@@ -39,7 +38,6 @@ export function CustomTable<T extends { id?: number | string; userId?: number | 
         });
     }, [data, searchQuery, searchField]);
 
-    // Pagination logic
     const totalPages = Math.ceil(filteredData.length / rowsPerPage) || 1;
     const paginatedData = React.useMemo(() => {
         const start = (currentPage - 1) * rowsPerPage;
@@ -54,7 +52,6 @@ export function CustomTable<T extends { id?: number | string; userId?: number | 
 
     return (
         <div className="flex w-full flex-col h-full bg-white dark:bg-dark-secondary rounded-xl transition-all duration-300">
-            {/* Top Search bar / Custom actions */}
             {searchField && (
                 <div className="flex items-center gap-2 border-b border-gray-100 px-5 py-3 dark:border-stroke-dark">
                     <div className="relative flex flex-1 max-w-xs">
@@ -73,7 +70,6 @@ export function CustomTable<T extends { id?: number | string; userId?: number | 
                 </div>
             )}
 
-            {/* Responsive Table Container */}
             <div className="flex-1 overflow-x-auto min-h-0 select-text">
                 <table className="w-full text-left border-collapse">
                     <thead>

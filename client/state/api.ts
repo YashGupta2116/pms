@@ -108,7 +108,6 @@ const baseQuery = fetchBaseQuery({
 const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
   let result = await baseQuery(args, api, extraOptions);
   if (result.error && result.error.status === 401) {
-    // Attempt token refresh
     const refreshResult = await baseQuery(
       {
         url: "auth/refresh",
@@ -120,7 +119,6 @@ const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
     if (refreshResult.data) {
       const data = refreshResult.data as { token: string; user: User };
       api.dispatch(setCredentials({ token: data.token, user: data.user }));
-      // Retry original request
       result = await baseQuery(args, api, extraOptions);
     } else {
       api.dispatch(clearCredentials());

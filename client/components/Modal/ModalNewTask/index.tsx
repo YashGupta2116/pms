@@ -55,7 +55,6 @@ const ModalNewTask = ({ id = null, isOpen, onClose }: Props) => {
         assignedUserId: assignedUserId ? parseInt(assignedUserId) : undefined,
       }).unwrap();
 
-      // Reset form states
       setTitle("");
       setDescription("");
       setStatus(Status.ToDo);
@@ -65,7 +64,7 @@ const ModalNewTask = ({ id = null, isOpen, onClose }: Props) => {
       setDueDate("");
       setAssignedUserId("");
       setProjectId("");
-      
+
       onClose();
     } catch (err: any) {
       alert(err?.data?.message || "Failed to create task");

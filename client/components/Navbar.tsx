@@ -25,7 +25,7 @@ const Navbar = () => {
   };
 
   return (
-    <div className="flex items-center justify-between border-b border-gray-200/60 bg-white/95 px-4 py-3 dark:border-stroke-dark/40 dark:bg-dark-bg/95 backdrop-blur-sm sticky top-0 z-50">
+    <div className="flex items-center justify-between border-b border-gray-200/60 bg-white/95 px-4 py-3 dark:border-stroke-dark/40 dark:bg-dark-bg/95 backdrop-blur-sm sticky top-0 z-30">
       {/* Search Bar */}
       <div className="flex items-center gap-8">
         {!isSidebarCollapsed ? null : (
@@ -36,7 +36,7 @@ const Navbar = () => {
             <Menu className="h-5 w-5 dark:text-white" />
           </button>
         )}
-        <div className="relative flex h-min w-[200px]">
+        <div className="relative flex h-min w-32 sm:w-48 md:w-64 transition-all duration-200">
           <Search className="absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform cursor-pointer text-gray-400 dark:text-gray-300" />
           <input
             className="w-full rounded-md border border-gray-200 bg-gray-50 p-2 pl-9 pr-3 text-sm placeholder-gray-400 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none dark:border-stroke-dark dark:bg-dark-secondary dark:text-white dark:placeholder-gray-400"
