@@ -37,7 +37,7 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
     return () => window.removeEventListener("resize", handleResize);
   }, [dispatch]);
   const token = useAppSelector((state) => state.auth.token);
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [isCheckingAuth, setIsCheckingAuth] = useState(!token);
   const [refresh] = useRefreshMutation();
 
   useEffect(() => {
@@ -53,8 +53,8 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
       try {
         const result = await refresh().unwrap();
         dispatch(setCredentials({ token: result.token, user: result.user }));
-      } catch (err) {
-
+      } catch {
+        // Ignore error as user is not authenticated
       } finally {
         setIsCheckingAuth(false);
       }
@@ -62,10 +62,9 @@ const DashboardLayout = ({ children }: { children: ReactNode }) => {
 
     if (!token) {
       checkAuth();
-    } else {
-      setIsCheckingAuth(false);
     }
-  }, [token, refresh, dispatch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if (isCheckingAuth) {
     return (

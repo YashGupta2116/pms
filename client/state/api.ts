@@ -105,23 +105,28 @@ const baseQuery = fetchBaseQuery({
   },
 });
 
-const baseQueryWithReauth = async (args: any, api: any, extraOptions: any) => {
-  let result = await baseQuery(args, api, extraOptions);
+const baseQueryWithReauth = async (args: any, baseQueryApi: any, extraOptions: any) => {
+  let result = await baseQuery(args, baseQueryApi, extraOptions);
   if (result.error && result.error.status === 401) {
-    const refreshResult = await baseQuery(
-      {
-        url: "auth/refresh",
-        method: "POST",
-      },
-      api,
-      extraOptions,
-    );
-    if (refreshResult.data) {
-      const data = refreshResult.data as { token: string; user: User };
-      api.dispatch(setCredentials({ token: data.token, user: data.user }));
-      result = await baseQuery(args, api, extraOptions);
-    } else {
-      api.dispatch(clearCredentials());
+    // Avoid intercepting/retrying if the failing request is the refresh token request itself
+    const isRefreshRequest = typeof args === "string" ? args === "auth/refresh" : args?.url === "auth/refresh";
+    if (!isRefreshRequest) {
+      const refreshResult = await baseQuery(
+        {
+          url: "auth/refresh",
+          method: "POST",
+        },
+        baseQueryApi,
+        extraOptions,
+      );
+      if (refreshResult.data) {
+        const data = refreshResult.data as { token: string; user: User };
+        baseQueryApi.dispatch(setCredentials({ token: data.token, user: data.user }));
+        result = await baseQuery(args, baseQueryApi, extraOptions);
+      } else {
+        baseQueryApi.dispatch(clearCredentials());
+        baseQueryApi.dispatch(api.util.resetApiState());
+      }
     }
   }
   return result;

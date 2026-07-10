@@ -3,7 +3,7 @@ import { Menu, Moon, Search, Settings, Sun, User, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useAppDispatch, useAppSelector } from "@/app/redux";
 import { setIsDarkMode, setIsSidebarCollapsed } from "@/state";
-import { useLogoutMutation } from "@/state/api";
+import { useLogoutMutation, api } from "@/state/api";
 import { clearCredentials } from "@/state/authSlice";
 
 const Navbar = () => {
@@ -22,6 +22,7 @@ const Navbar = () => {
       console.error("Failed to logout:", err);
     }
     dispatch(clearCredentials());
+    dispatch(api.util.resetApiState());
   };
 
   return (
