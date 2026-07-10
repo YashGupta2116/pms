@@ -20,7 +20,7 @@ import { authMiddleware } from "./middleware/auth.middleware.js";
 dotenv.config();
 
 const app = express();
-
+app.set("trust proxy", 1);
 app.use(express.json());
 app.use(helmet());
 app.use(helmet.crossOriginResourcePolicy({ policy: "cross-origin" }));
@@ -32,7 +32,7 @@ app.use(
   cors({
     origin: process.env.CLIENT_URL || "http://localhost:3000",
     credentials: true,
-  })
+  }),
 );
 
 // Routes
