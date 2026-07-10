@@ -5,6 +5,7 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
+import rateLimit from "express-rate-limit";
 
 // ROUTE IMPORTS
 import projectRoutes from "./routes/project.routes.js";
@@ -32,6 +33,7 @@ app.use(
   cors({
     origin: process.env.CLIENT_URL || "http://localhost:3000",
     credentials: true,
+    allowedHeaders: ["Content-Type", "Authorization"],
   }),
 );
 
@@ -39,6 +41,13 @@ app.use(
 app.get("/", (req, res) => {
   res.send("This is home route");
 });
+
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 100,
+});
+
+app.use(limiter);
 
 app.use("/auth", authRoutes);
 app.use("/projects", authMiddleware, projectRoutes);
